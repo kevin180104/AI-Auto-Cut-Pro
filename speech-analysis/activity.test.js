@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { analyzeActivity, approvedEdl } from './activity.js';
 import { parseWavBuffer, renderWavBuffer } from '../audio-engine/wav.js';
+import { makePreview } from './preview.js';
 
 function fixture(channels = 1, rate = 8000) {
   const frames = rate * 4, size = frames * channels * 2, b = Buffer.alloc(44 + size);
@@ -29,6 +30,14 @@ test('silent input and unsupported WAV produce no unsafe proposal', () => {
   const b = fixture(); b.fill(0, 44); assert.equal(analyzeActivity(b).proposals.length, 0);
   b.writeUInt16LE(8, 34); assert.throws(() => analyzeActivity(b));
 });
+test('preview includes context and preserves both channels before and after removal', () => {
+  const source = fixture(2); const analysis = analyzeActivity(source); const p = analysis.proposals[0];
+  const preview = makePreview(source, analysis, p, 0.5);
+  const before = parseWavBuffer(preview.before), after = parseWavBuffer(preview.after);
+  assert.equal(before.channels, 2); assert.equal(after.channels, 2);
+  assert.equal(before.sampleFrames - after.sampleFrames, p.endFrame - p.startFrame);
+  assert.equal(before.sampleFrames, p.endFrame - p.startFrame + 8000);
+});
 test('CLI accepts a human approval and preserves source hash while producing valid WAV and EDL', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'aacp-')); const src = join(dir, 'source.wav'), out = join(dir, 'output.wav'), edl = join(dir, 'edl.json');
   const b = fixture(); await writeFile(src, b); const hash = createHash('sha256').update(b).digest('hex');
@@ -37,4 +46,14 @@ test('CLI accepts a human approval and preserves source hash while producing val
   assert.equal(JSON.parse(await readFile(edl, 'utf8')).removedSegments[0].approval, 'human-approved');
   assert.ok(parseWavBuffer(await readFile(out)).sampleFrames < 32000);
   const collision = spawnSync(process.execPath, ['scripts/review-wav.mjs', src, out, edl], { input: 'yes\n', encoding: 'utf8' }); assert.notEqual(collision.status, 0);
+});
+test('CLI rejects or cancels without deleting unapproved audio', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'aacp-reject-')); const src = join(dir, 'source.wav'); await writeFile(src, fixture());
+  const out = join(dir, 'kept.wav'), edl = join(dir, 'kept.json');
+  const rejected = spawnSync(process.execPath, ['scripts/review-wav.mjs', src, out, edl], { input: 'no\n', encoding: 'utf8' });
+  assert.equal(rejected.status, 0, rejected.stderr); assert.equal(JSON.parse(await readFile(edl, 'utf8')).removedSegments.length, 0);
+  assert.equal(parseWavBuffer(await readFile(out)).sampleFrames, 32000);
+  const cancelledOutput = join(dir, 'cancelled.wav'), cancelledEdl = join(dir, 'cancelled.json');
+  const cancelled = spawnSync(process.execPath, ['scripts/review-wav.mjs', src, cancelledOutput, cancelledEdl], { input: 'q\n', encoding: 'utf8' });
+  assert.notEqual(cancelled.status, 0); await assert.rejects(readFile(cancelledOutput), { code: 'ENOENT' }); await assert.rejects(readFile(cancelledEdl), { code: 'ENOENT' });
 });

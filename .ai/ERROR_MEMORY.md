@@ -1,5 +1,14 @@
 # Error Memory
 
+## P2-004 — Preview setup closed piped review input
+
+- Detected 2026-11-16 in CLI synthetic regression; affected `scripts/review-wav.mjs`.
+- Symptom: `ERR_USE_AFTER_CLOSE` before approval.
+- Cause: readline consumed piped input while asynchronous preview creation was still running.
+- Fix: generate previews before creating the readline interface.
+- Regression: existing CLI end-to-end approval test plus full suite.
+- Prevention: prepare asynchronous resources before listening to input. Status: fixed; end-to-end regression passed.
+
 ## P2-003 — CI fresh checkout missing test scratch directory
 
 - Detected 2026-11-16 in GitHub Actions run 43804491064; affected CI setup.

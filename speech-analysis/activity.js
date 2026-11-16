@@ -23,15 +23,22 @@ export function analyzeActivity(buffer, { threshold = 0.01, windowMs = 20, margi
       else active.push({ startFrame: a, endFrame: b });
     }
   }
+  return proposalsFromActive(wav, buffer, active, { threshold, windowMs, marginMs, minQuietMs }, 'peak-energy-v1');
+}
+
+export function proposalsFromActive(wav, buffer, active, settings, detector) {
+  const { minQuietMs } = settings;
+  let last = 0;
+  for (const r of active) { if (!Number.isSafeInteger(r.startFrame) || !Number.isSafeInteger(r.endFrame) || r.startFrame < last || r.endFrame <= r.startFrame || r.endFrame > wav.sampleFrames) throw new Error('Invalid activity ranges'); last = r.endFrame; }
   const quiet = []; let cursor = 0;
   for (const segment of active) { if (cursor < segment.startFrame) quiet.push({ startFrame: cursor, endFrame: segment.startFrame }); cursor = segment.endFrame; }
   if (cursor < wav.sampleFrames) quiet.push({ startFrame: cursor, endFrame: wav.sampleFrames });
   // All-quiet input can contain quiet speech: never propose deleting the whole file.
   const proposals = active.length ? quiet.filter(s => s.endFrame - s.startFrame >= Math.ceil(wav.sampleRate * minQuietMs / 1000)).map((s, i) => ({
     id: `quiet-${i + 1}`, ...s, startSeconds: s.startFrame / wav.sampleRate, endSeconds: s.endFrame / wav.sampleRate,
-    reason: 'Low peak energy; requires listening and explicit approval', status: 'pending',
+    reason: `Potential quiet region (${detector}); requires listening and explicit approval`, status: 'pending',
   })) : [];
-  return { source: { sha256: createHash('sha256').update(buffer).digest('hex'), sampleRate: wav.sampleRate, channels: wav.channels, totalSamples: wav.sampleFrames }, active, quiet, proposals, settings: { threshold, windowMs, marginMs, minQuietMs }, detector: 'peak-energy-v1' };
+  return { source: { sha256: createHash('sha256').update(buffer).digest('hex'), sampleRate: wav.sampleRate, channels: wav.channels, totalSamples: wav.sampleFrames }, active, quiet, proposals, settings, detector };
 }
 
 export function approvedEdl(analysis, approvedIds, sourcePath, outputPath) {

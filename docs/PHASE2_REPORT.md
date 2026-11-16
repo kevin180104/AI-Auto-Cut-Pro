@@ -1,5 +1,13 @@
 # Phase 2 progress
 
+## Sprint 3 progress — 2026-11-16
+
+- **PASS (local synthetic voice):** Silero VAD 6.2.3 ONNX ran on an English Windows-generated synthetic speech WAV at 22,050 Hz, 117,716 frames. It reported source frame ranges `[0,46041)` and `[58388,106017)`. CLI ran the model and rendered a distinct WAV with zero approved removals and unchanged source hash. No real Vietnamese recording or accuracy benchmark was used.
+- **PASS (synthetic automated tests):** 32 Node tests, five Python backend tests and eight skill checks passed. Stereo preview includes 0.5 s context on each side, and output duration after removal was verified. Approve, reject, cancel and output collision behavior tested. Entering `yes` in an automated test is not evidence of listening.
+- **LIMITED:** CLI writes before/after preview files into the operating system temporary directory and offers Windows default-player launch. Player launch and human listening have not been observed. Preview audio remains in temporary storage until manually removed. Detection is conservative but may miss quiet speech; stereo inference selects the higher-energy channel and may miss speech isolated in the other channel. Review is mandatory.
+- **BLOCKED / NOT TESTED:** fades/crossfades, MP3 export and their regression checks are not implemented. FFmpeg 7.1 from `C:\Program Files\FormatFactory5.21.0.0\ffmpeg.exe` was verified via `-version`; encoding was not tested. Soft speech, noise, breath, expressive pauses and Vietnamese speech accuracy have not been verified on real recordings. The model runtime was tested locally, not in CI. CEP remains UNVERIFIED.
+- **Safety:** Human approval is required for every removed interval; no automatic removal. EDL records detector and settings, original SHA-256 and approved ranges. WAV ancillary metadata is dropped with a warning. A warning is displayed when removals exceed 25% of duration.
+
 ## Sprint 2 evidence — 2026-11-16
 
 An experimental CLI performs peak-energy activity detection over PCM16 mono/stereo at the source sample rate (no resampling), pads detected activity by 200 ms, proposes long low-energy spans, asks the operator to listen and explicitly approve each removal, then writes an EDL and a separate WAV and checks its frame count and source hash. No automatic removal occurs. Peak energy is not a speech classifier; weak speech/noise can be misclassified, so the workflow is experimental and requires listening. Synthetic tests covered 8 kHz mono and 48 kHz stereo, approval, rejection at EDL level, source hash, output and collision. Real Vietnamese recordings and accuracy are NOT TESTED.
