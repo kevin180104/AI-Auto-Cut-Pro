@@ -1,5 +1,32 @@
 # Error Memory
 
+## P3-003 — Silero adapter rejects pathlib input
+
+- Detected 2026-11-16 in synthetic stereo regression; `speech-analysis/silero_vad_local.py`.
+- Symptom: `wave.open` treated `Path` as an open stream and raised `AttributeError`.
+- Cause: Python 3.12 `wave.open` requires a string or file object.
+- Fix: convert path-like objects with `os.fspath`.
+- Regression: `test_silero_channels.py` invokes `detect` with pathlib paths for left, right and alternating channels.
+- Prevention: normalize filesystem path-like objects at the API boundary. Status: pending regression verification.
+
+## P3-002 — Stereo VAD selected only the loudest channel
+
+- Detected 2026-11-16, baseline 7ec0959, `speech-analysis/silero_vad_local.py`.
+- Symptom: speech isolated in the lower-energy channel could be omitted from protected ranges.
+- Cause: selecting one channel based on whole-file mean energy discarded the other channel.
+- Fix: infer independently on each channel and union frame ranges while retaining per-channel evidence.
+- Regression: Silero 6.2.3 ONNX executed on local synthetic speech placed left-only, right-only and alternately; assert detected channel provenance. Real Vietnamese speech and noisy recordings remain untested.
+- Prevention: protect the union of channel detections; never assume one channel represents the whole recording. Status: fixed for tested synthetic samples, accuracy not certified.
+
+## P3-001 — EDL published before successful render
+
+- Detected 2026-11-16, baseline 7ec0959, `scripts/review-wav.mjs`.
+- Symptom: render failure could leave an EDL at its final path despite no valid WAV.
+- Cause: EDL was written before render and verification.
+- Fix: render and verify in destination-local temporary directories, publish WAV using exclusive hard link and EDL last; retain a clearly reported orphan WAV if interrupted after WAV publication.
+- Regression: `failed render or EDL publication never publishes a completed EDL` injects hash mismatch and EDL publication failure, checks source and collision handling.
+- Prevention: publish a completion marker only after verified data; never remove an already-published path when ownership could have changed. Status: verification pending.
+
 ## P2-004 — Preview setup closed piped review input
 
 - Detected 2026-11-16 in CLI synthetic regression; affected `scripts/review-wav.mjs`.

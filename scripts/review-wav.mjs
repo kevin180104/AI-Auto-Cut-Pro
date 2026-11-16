@@ -1,5 +1,4 @@
-import { readFile, writeFile, mkdtemp } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
+import { access, readFile, writeFile, mkdtemp } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { resolve, join } from 'node:path';
@@ -7,13 +6,18 @@ import { tmpdir } from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { analyzeActivity, approvedEdl, proposalsFromActive } from '../speech-analysis/activity.js';
-import { parseWavBuffer, renderWavFromEdl } from '../audio-engine/wav.js';
+import { parseWavBuffer } from '../audio-engine/wav.js';
+import { publishRender } from '../audio-engine/publish.js';
 import { makePreview } from '../speech-analysis/preview.js';
 
 const [input, output, edlPath] = process.argv.slice(2);
 if (!input || !output || !edlPath) { console.error('Usage: node scripts/review-wav.mjs input.wav output.wav output.edl.json'); process.exit(1); }
 const paths = [input, output, edlPath].map(value => resolve(value));
 if (new Set(paths.map(p => p.toLowerCase())).size !== 3) throw new Error('Source, output and EDL paths must be distinct');
+for (const destination of [paths[1], paths[2]]) {
+  try { await access(destination); } catch (error) { if (error.code === 'ENOENT') continue; throw error; }
+  throw new Error(`Destination already exists: ${destination}`);
+}
 const source = await readFile(paths[0]);
 let analysis;
 if (process.env.AACP_VAD_PYTHON) {
@@ -21,7 +25,7 @@ if (process.env.AACP_VAD_PYTHON) {
   if (run.status !== 0) throw new Error(`Silero failed; no fallback or deletion: ${run.stderr}`);
   const vad = JSON.parse(run.stdout); const wav = parseWavBuffer(source);
   if (vad.sampleRate !== wav.sampleRate || vad.frames !== wav.sampleFrames || vad.channels !== wav.channels) throw new Error('VAD source format mismatch');
-  analysis = proposalsFromActive(wav, source, vad.regions, { marginMs: 200, minQuietMs: 1000, selectedChannel: vad.selectedChannel }, vad.detector);
+  analysis = proposalsFromActive(wav, source, vad.regions, { marginMs: 200, minQuietMs: 1000, channelRegions: vad.channelRegions }, vad.detector);
 } else analysis = analyzeActivity(source);
 console.log('CẢNH BÁO: VAD có thể bỏ sót lời nói nhỏ. Hãy nghe từng vùng trước khi duyệt. Metadata WAV phụ sẽ bị bỏ.');
 const approved = [];
@@ -54,9 +58,5 @@ try {
 const edl = approvedEdl(analysis, approved, paths[0], paths[1]);
 const removed = edl.removedSegments.reduce((sum, r) => sum + r.sourceEndSample - r.sourceStartSample, 0);
 if (removed / analysis.source.totalSamples > 0.25) console.warn(`CẢNH BÁO: giảm ${(100 * removed / analysis.source.totalSamples).toFixed(1)}% thời lượng; hãy kiểm tra lại.`);
-await writeFile(paths[2], JSON.stringify(edl, null, 2), { flag: 'wx' });
-const result = await renderWavFromEdl(edl);
-const out = parseWavBuffer(await readFile(paths[1]));
-const sourceHash = createHash('sha256').update(await readFile(paths[0])).digest('hex');
-if (sourceHash !== analysis.source.sha256 || out.sampleFrames !== result.outputFrames || out.sampleRate !== analysis.source.sampleRate || out.channels !== analysis.source.channels) throw new Error('Output verification failed');
-console.log(JSON.stringify({ ...result, sourceHashUnchanged: true, approved: approved.length, warning: 'Ancillary WAV metadata was not preserved; listening review is required.' }, null, 2));
+const result = await publishRender(edl, paths[2]);
+console.log(JSON.stringify({ ...result, approved: approved.length, warning: 'Ancillary WAV metadata was not preserved; listening review is required.' }, null, 2));

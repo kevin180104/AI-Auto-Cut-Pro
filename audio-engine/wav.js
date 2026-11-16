@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { open, readFile, unlink } from 'node:fs/promises';
 import { win32 } from 'node:path';
 import { validateEdl } from './edl.js';
+import { applyPcm16Effects } from './effects.js';
 
 const MAX_RIFF_SIZE = 0xffffffff;
 
@@ -126,8 +127,14 @@ function renderWavBuffer(sourceBuffer, edl) {
   }));
   const retainedBytes = frameRanges.reduce((sum, range) => sum + range.end - range.start, 0);
   if (retainedBytes > MAX_RIFF_SIZE) fail('Rendered WAV audio exceeds the RIFF 32-bit size limit');
-  const retainedAudio = Buffer.concat(frameRanges.map((range) => sourceBuffer.subarray(range.start, range.end)), retainedBytes);
-  const outputFrames = retainedBytes / wav.blockAlign;
+  const parts = frameRanges.map((range) => sourceBuffer.subarray(range.start, range.end));
+  let retainedAudio = Buffer.concat(parts, retainedBytes);
+  let outputFrames = retainedBytes / wav.blockAlign;
+  if (edl.effects) {
+    if (wav.formatTag !== 1 || wav.bitsPerSample !== 16) fail('Effects require PCM16 WAV');
+    const processed = applyPcm16Effects(parts, wav.channels, wav.sampleRate, edl.effects);
+    retainedAudio = processed.buffer; outputFrames = processed.sampleFrames;
+  }
   const outputBuffer = buildWaveFile(wav.fmtChunk, retainedAudio, wav.effectiveFormatTag, outputFrames);
 
   return {
@@ -139,7 +146,8 @@ function renderWavBuffer(sourceBuffer, edl) {
       sampleFrames: wav.sampleFrames,
     },
     outputFrames,
-    removedFrames: wav.sampleFrames - outputFrames,
+    removedFrames: wav.sampleFrames - retainedBytes / wav.blockAlign,
+    overlapFrames: retainedBytes / wav.blockAlign - outputFrames,
     metadataPreserved: false,
   };
 }
@@ -168,6 +176,7 @@ async function renderWavFromEdl(edl) {
     outputPath: edl.output.path,
     outputFrames: result.outputFrames,
     removedFrames: result.removedFrames,
+    overlapFrames: result.overlapFrames,
     sourceFormat: result.sourceFormat,
     metadataPreserved: result.metadataPreserved,
   };

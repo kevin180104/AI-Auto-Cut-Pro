@@ -1,5 +1,14 @@
 # Phase 2 progress
 
+## Sprint 3.1 — 2026-11-16
+
+- **PASS, synthetic:** Silero 6.2.3 ONNX independently analyzed both channels and unioned detections. Locally generated English synthetic speech placed left-only, right-only, and alternating returned the expected channel provenance. The automated channel mapping regression uses stubbed inference; real-model evidence is the separate local run. VAD can still miss speech: every proposed removal remains a human REVIEW decision. Vietnamese broadcast audio and subjective listening are NOT TESTED.
+- **PASS, synthetic:** explicit, EDL-recorded PCM16 fade-in/fade-out and crossfade, capped at 10 ms, preserve sample rate and channels; crossfade shortens output by its overlap. Tests cover stereo discontinuity, clipping bounds, deterministic EDL render and output frame count. They do not establish consonant preservation or perceptual quality; human listening is required. Effects are opt-in through EDL, not automatically applied by the review CLI.
+- **PASS, synthetic:** FFmpeg 7.1 at `C:\Program Files\FormatFactory5.21.0.0\ffmpeg.exe` has `libmp3lame`. Stereo 48 kHz synthetic WAV was encoded to MP3, decoded to verify duration/sample rate/channels, and the source retained. MP3 is lossy. Missing executable and existing destination are rejected. Explicit encoder-unavailable and subjective MP3 listening are NOT TESTED.
+- **PASS, injected failures:** EDL and WAV are prepared and checked before publishing via exclusive links; EDL is published last. Render error or injected EDL publication failure produces no final EDL. A crash between links can leave an orphan WAV, reported for manual inspection; two-file atomic publication is not guaranteed. Temp and output files reside on their destination filesystems and require hard-link support.
+- **PASS:** 38 Node tests (including local FFmpeg), six Python tests (one uses a stub for per-channel union, five backend), and eight skill checks. GitHub Actions result for this revision must be checked separately; model-dependent tests are local only.
+- Preview cleanup is an explicit command after the user closes the player; preview audio stays local. No real audio or speech text was logged or uploaded. No subjective listening assessment was performed.
+
 ## Sprint 3 progress — 2026-11-16
 
 - **PASS (local synthetic voice):** Silero VAD 6.2.3 ONNX ran on an English Windows-generated synthetic speech WAV at 22,050 Hz, 117,716 frames. It reported source frame ranges `[0,46041)` and `[58388,106017)`. CLI ran the model and rendered a distinct WAV with zero approved removals and unchanged source hash. No real Vietnamese recording or accuracy benchmark was used.
