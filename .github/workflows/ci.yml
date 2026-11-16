@@ -13,5 +13,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: mkdir -p work
       - run: npm test
       - run: python -m unittest discover -s integrations/audition-cep-poc/backend -p 'test_*.py' -v

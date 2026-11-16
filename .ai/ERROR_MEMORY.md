@@ -1,5 +1,14 @@
 # Error Memory
 
+## P2-003 — CI fresh checkout missing test scratch directory
+
+- Detected 2026-11-16 in GitHub Actions run 43804491064; affected CI setup.
+- Symptom: WAV collision test failed creating a temporary folder under `work/`.
+- Root cause: `work/` is ignored and does not exist in a fresh checkout.
+- Fix: create the scratch parent directory in CI before tests.
+- Regression: rerun the unchanged WAV test and full CI on a fresh checkout.
+- Prevention: explicitly provision ignored fixture directories in clean CI environments. Status: CI verification pending.
+
 ## P2-002 — CLI path normalization fails
 
 - Detected 2026-11-16 in the synthetic end-to-end test; affected module `scripts/review-wav.mjs`.
