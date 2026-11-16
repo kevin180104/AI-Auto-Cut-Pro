@@ -1,5 +1,14 @@
 # Error Memory
 
+## P2-001 — Backend log timestamp incorrectly marked UTC
+
+- Detected 2026-11-16 in the Phase 2 backend runtime test; affects the POC backend on non-UTC hosts.
+- Symptom: log time used local time while the format ended in `Z`.
+- Root cause: Python logging defaults to local time; `Z` was added without setting the formatter's converter.
+- Fix: configure `logging.Formatter.converter = time.gmtime` in `backend/server.py`.
+- Regression check: inspect a formatted record against UTC and run the backend HTTP integration suite.
+- Prevention: only label timestamps UTC when the clock conversion is explicitly UTC. Status: fixed; verify with backend test suite.
+
 Follow-up 2026-11-16: no additional reproducible product defect was established. GitHub HTTP 404 is an access/existence ambiguity; missing Python in searched locations and an uninstalled CEP panel are environment blockers, not diagnosed application defects.
 
 No application defect has been reproduced or diagnosed in this Phase 1 verification. The 19 current automated tests pass, including the expanded synthetic WAV and EDL boundary cases. The Audition POC did not expose a product defect; one UI automation action against a metadata control was inconclusive and is not treated as an application failure.

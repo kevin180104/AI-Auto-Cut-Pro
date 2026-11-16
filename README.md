@@ -4,7 +4,7 @@ AI Auto Cut Pro is a Windows-first, Vietnamese-first project for assisting with 
 
 ## Project status
 
-This local foundation is on `feat/phase1-foundation`. Read [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md) for verified machine and Audition findings.
+The foundation is synchronized to [GitHub](https://github.com/kevin180104/AI-Auto-Cut-Pro) on `main` and `feat/phase1-foundation`. Phase 2 development uses `feat/phase2-runtime-integration`. Read [docs/PHASE1_REPORT.md](docs/PHASE1_REPORT.md) and [docs/PHASE1_5_REPORT.md](docs/PHASE1_5_REPORT.md) for historical evidence and limits.
 
 Implemented: EDL v1 validation and a standalone RIFF/WAVE renderer in `audio-engine/`. The renderer copies approved PCM/IEEE-float sample frames into a new WAV and validates the source hash. It currently drops ancillary WAV metadata and does not render MP3, fades, or effects.
 
@@ -31,7 +31,7 @@ See the verified machine inventory and blockers in `docs/PHASE1_REPORT.md`. Node
 - `audio-engine/`: EDL and WAV foundations.
 - `docs/`: investigation reports and design notes.
 
-The confirmed GitHub repository has not been created, and no remote is configured. Connect this local branch to the `AI-Auto-Cut-Pro` remote before publishing changes.
+The configured remote is `https://github.com/kevin180104/AI-Auto-Cut-Pro.git`.
 
 ## Checks
 

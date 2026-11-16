@@ -25,4 +25,4 @@ Build a Windows-first, Vietnamese-first assistant for reviewing and editing spok
 
 ## Current status
 
-Phase 1 findings and unverified items are in `docs/PHASE1_REPORT.md`. This workspace was empty and had no remote when work began. A GitHub repository is not yet available; do not publish or push until a repository URL exists.
+Phase 1 findings and unverified items are in `docs/PHASE1_REPORT.md` and `docs/PHASE1_5_REPORT.md`. The repository is `https://github.com/kevin180104/AI-Auto-Cut-Pro`; foundation commit `fcad99b40f66d6ae5119b163b80469480973d3b9` is on `main` and `feat/phase1-foundation`. Develop Phase 2 on `feat/phase2-runtime-integration` and do not commit directly to `main`.

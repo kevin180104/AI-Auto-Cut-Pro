@@ -3,11 +3,13 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import logging
+import time
 
 HOST = "127.0.0.1"
 PORT = 8765
 MAX_BODY = 2048
 logging.basicConfig(level=logging.INFO, format="%(asctime)sZ %(levelname)s %(message)s")
+logging.Formatter.converter = time.gmtime
 
 
 class Handler(BaseHTTPRequestHandler):
