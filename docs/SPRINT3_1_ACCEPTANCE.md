@@ -45,3 +45,11 @@ Sample real-01 is a user-authorized local Vietnamese recording, mono IEEE float 
 Use the local LISTEN.md for the full join list and review.json for frame-accurate regions. Mark each proposal KEEP, APPROVE or REVIEW after listening to both files. For approved interior joins, compare the plain cut and fade/crossfade versions at matched playback level and record clicks, consonants, breathing, pacing and room tone. Audition opening of synthetic exports remains a separate result.
 
 The PCM16 analysis copy is a workaround for the documented model input limit. It does not quantize the reference WAV or previews. No new product defect was confirmed. Production acceptance remains pending human listening and validation of any approved real edits.
+
+## Audio Review Studio
+
+The localhost review interface uses existing before/after previews and stores decisions and their history in the ignored dataset directory. Saved decisions are bound to the exact proposal JSON and source SHA-256. Exports require explicit session completion and source verification, remove only APPROVE ranges and use the existing verified WAV/EDL publication path. Optional 5 ms crossfade produces a separate comparison after explicit approval. Optional lossy MP3 uses the hard-cut WAV.
+
+The isolated HTTP integration test covers 140 proposals, both preview modes, decision replacement, stale revisions, cross-origin rejection, wrong source identity, export-time source hash failure, no overwrite, EDL, retained REVIEW ranges and WAV frame counts. Real recording decisions, perceptual quality and broadcast acceptance remain pending user review.
+
+Windows validation passed in Playwright with Microsoft Edge. An isolated copy of the dataset index and four float32 previews loaded all 140 entries and exercised waveform display, A/B playback, playback shortcuts, navigation, focus protection, decision replacement and reload persistence. This browser check did not change the original review session or assess listening quality.

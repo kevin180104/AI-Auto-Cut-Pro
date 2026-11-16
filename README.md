@@ -46,3 +46,16 @@ To use the experimental local Silero ONNX model, install `speech-analysis/requir
 After closing any player using the previews, remove a printed preview directory explicitly with `node scripts/cleanup-previews.mjs <preview-directory>`. The command only accepts generated preview directories under the OS temp folder and rejects unexpected contents.
 
 Optional PCM16 effects can be specified in an EDL as `effects: { "approval": "human-approved", "fadeInFrames": 0, "fadeOutFrames": 0, "crossfadeFrames": 0 }`. Crossfade overlaps retained audio, shortens the output, and is limited to 10 ms; listen to every join and do not apply it across speech. CLI review does not automatically add effects. Export a checked WAV as lossy MP3 with `node scripts/export-mp3.mjs <ffmpeg.exe> <input.wav> <new-output.mp3> [bitrate-kbps]`. This checks decoded duration and format, retains the WAV, and refuses to overwrite an existing MP3.
+
+## Audio Review Studio
+
+From the repository on Windows 11, run:
+
+```powershell
+npm.cmd run studio
+Start-Process http://127.0.0.1:8768
+```
+
+Keep the first PowerShell window open and run the second command in another window. The Studio reads the existing private review dataset in work/acceptance/real-01. Navigate with Left/Right, compare with A/B, play/pause with Space and restart with R. Press 1 to keep, 2 to approve a cut, or 3 to return it to review. Changes to saved choices ask for confirmation.
+
+At the end of the session, choose export and confirm. Only APPROVE intervals are removed. The optional 5 ms crossfade creates a separate comparison WAV and requires a second confirmation. Optional MP3 is made from the hard-cut WAV. Set AACP_FFMPEG to an alternative FFmpeg executable if needed. Exports and decision history stay in the ignored dataset folder. A revision that already has an export is protected from overwrite. The source file registered in the local reference EDL must remain available and unchanged. WAV ancillary metadata may be omitted and MP3 is lossy.

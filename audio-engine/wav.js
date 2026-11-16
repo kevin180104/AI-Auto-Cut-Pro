@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { open, readFile, unlink } from 'node:fs/promises';
 import { win32 } from 'node:path';
 import { validateEdl } from './edl.js';
-import { applyPcm16Effects } from './effects.js';
+import { applyEffects } from './effects.js';
 
 const MAX_RIFF_SIZE = 0xffffffff;
 
@@ -131,8 +131,9 @@ function renderWavBuffer(sourceBuffer, edl) {
   let retainedAudio = Buffer.concat(parts, retainedBytes);
   let outputFrames = retainedBytes / wav.blockAlign;
   if (edl.effects) {
-    if (wav.formatTag !== 1 || wav.bitsPerSample !== 16) fail('Effects require PCM16 WAV');
-    const processed = applyPcm16Effects(parts, wav.channels, wav.sampleRate, edl.effects);
+    const float = wav.effectiveFormatTag === 3 && wav.bitsPerSample === 32;
+    if (!float && (wav.formatTag !== 1 || wav.bitsPerSample !== 16)) fail('Effects require PCM16 or float32 WAV');
+    const processed = applyEffects(parts, wav.channels, wav.sampleRate, edl.effects, float);
     retainedAudio = processed.buffer; outputFrames = processed.sampleFrames;
   }
   const outputBuffer = buildWaveFile(wav.fmtChunk, retainedAudio, wav.effectiveFormatTag, outputFrames);
