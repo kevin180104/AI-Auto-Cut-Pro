@@ -1,5 +1,14 @@
 # Error Memory
 
+## P3-004 — FFmpeg missing on CI runner
+
+- Detected 2026-11-16, GitHub Actions run 43828637921.
+- Symptom: MP3 integration test failed with `spawnSync /usr/bin/ffmpeg ENOENT`.
+- Cause: runner image did not provide FFmpeg at the assumed path.
+- Fix: install FFmpeg in CI before invoking the unchanged integration test.
+- Regression: GitHub Actions runs the same MP3 encode/decode test with `/usr/bin/ffmpeg`.
+- Prevention: provision external executables explicitly in fresh CI environments. Status: CI rerun pending.
+
 ## P3-003 — Silero adapter rejects pathlib input
 
 - Detected 2026-11-16 in synthetic stereo regression; `speech-analysis/silero_vad_local.py`.
