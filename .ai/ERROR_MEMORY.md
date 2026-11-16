@@ -90,3 +90,11 @@ No application defect has been reproduced or diagnosed in this Phase 1 verificat
 Do not create a defect entry for an unverified integration capability or an inconclusive UI automation action. If a reproducible product defect is found, record the failing fixture and exact host/build, root cause, fix, regression check, and prevention rule before marking it resolved.
 
 Each entry must include ID, detection date, affected version, symptom, reproduction conditions, root cause, affected file/module, fix, regression check, prevention rule, and verification status. Do not store private recordings in this file or repository.
+
+## P4-001 — PyAV WAV decode API mismatch
+
+- Detected on Windows in Sprint 4 with faster-whisper 1.2.1 and PyAV 19.0.2.
+- Opening the real WAV through faster-whisper raised TypeError because PyAV rejected the metadata_errors argument. The run failed before generating a transcript.
+- The local adapter now invokes FFmpeg with an argument vector to decode mono float32 at 16 kHz and passes the sample array to faster-whisper.
+- Regression evidence: real source and output transcription through the new path. Track transcription completion separately from model accuracy.
+- Prevention: verify the actual decode and model input path against the deployed runtime.
