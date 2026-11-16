@@ -1,5 +1,14 @@
 # Error Memory
 
+## P2-002 — CLI path normalization fails
+
+- Detected 2026-11-16 in the synthetic end-to-end test; affected module `scripts/review-wav.mjs`.
+- Symptom: CLI exited before review with `ERR_INVALID_ARG_TYPE`.
+- Root cause: `Array.map(resolve)` supplied index and array to the variadic path function.
+- Fix: wrap `resolve` in a single-argument callback.
+- Regression: `CLI accepts a human approval and preserves source hash` runs the full path.
+- Prevention: wrap variadic functions passed as array callbacks. Status: fixed; end-to-end regression passed.
+
 ## P2-001 — Backend log timestamp incorrectly marked UTC
 
 - Detected 2026-11-16 in the Phase 2 backend runtime test; affects the POC backend on non-UTC hosts.

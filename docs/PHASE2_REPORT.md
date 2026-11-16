@@ -1,5 +1,13 @@
 # Phase 2 progress
 
+## Sprint 2 evidence — 2026-11-16
+
+An experimental CLI performs peak-energy activity detection over PCM16 mono/stereo at the source sample rate (no resampling), pads detected activity by 200 ms, proposes long low-energy spans, asks the operator to listen and explicitly approve each removal, then writes an EDL and a separate WAV and checks its frame count and source hash. No automatic removal occurs. Peak energy is not a speech classifier; weak speech/noise can be misclassified, so the workflow is experimental and requires listening. Synthetic tests covered 8 kHz mono and 48 kHz stereo, approval, rejection at EDL level, source hash, output and collision. Real Vietnamese recordings and accuracy are NOT TESTED.
+
+`npm.cmd test`: 30 passed, 0 failed; eight skill checks passed. Python unittest: five passed, zero failed. GitHub Actions workflow added; remote CI result is pending until observed.
+
+Silero VAD supports 8/16 kHz models and would need a validated downmix/resampling pipeline for other input rates ([Silero FAQ](https://github.com/snakers4/silero-vad/wiki/FAQ)). Faster-whisper is a potential local multilingual adapter ([project](https://github.com/SYSTRAN/faster-whisper)); neither model has been installed or benchmarked. No WER/CER claims. FFmpeg was not found on PATH; MP3 remains untested. Fades/crossfades remain unimplemented. Custom CEP and host APIs remain UNVERIFIED.
+
 Foundation `fcad99b40f66d6ae5119b163b80469480973d3b9`; development branch `feat/phase2-runtime-integration`. This is work in progress, not acceptance.
 
 ## Backend

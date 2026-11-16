@@ -36,3 +36,7 @@ The configured remote is `https://github.com/kevin180104/AI-Auto-Cut-Pro.git`.
 ## Checks
 
 Run `npm.cmd test` to execute the Node unit tests and validate project skill metadata.
+
+## Experimental local review CLI
+
+`node scripts/review-wav.mjs input.wav output.wav output.edl.json` analyzes PCM16 mono/stereo WAV at its native sample rate. It reports low-energy ranges and asks for `yes` for each removal after listening. It writes a new EDL and WAV and checks the result and source hash. Other answers reject a proposed removal. The detector is peak energy, not a trained speech VAD: quiet speech can be misclassified. Review every proposed range and listen to the output. Ancillary WAV metadata is dropped. Never use this experimental tool for unattended edits or production recordings.
