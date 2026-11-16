@@ -5,7 +5,7 @@ import {join,resolve} from 'node:path';
 import {parseWavBuffer} from '../audio-engine/wav.js';
 import {publishRender} from '../audio-engine/publish.js';
 import {exportMp3} from '../audio-engine/mp3.js';
-import {classify} from '../speech-analysis/auto-evidence.js';
+import {classify, formatFullScaleCount} from '../speech-analysis/auto-evidence.js';
 
 const dir=resolve(process.argv[2] || 'work/acceptance/real-01');
 const out=join(dir,'sprint4');
@@ -67,7 +67,7 @@ await writeFile(join(out,'auto-edit-report.md'),[
   'Số phát hiện giữ nguyên: '+counts.CONSERVATIVE+' chưa chắc chắn, '+counts.PROTECTED+' được bảo vệ.',
   'WAV: '+report.outputFrames+' frame, dữ liệu mẫu khớp nguồn.',
   'MP3: 192 kbps, '+report.mp3DecodedFrames+' frame sau giải mã.',
-  'Peak tuyệt đối: '+report.peak.toFixed(6)+'. RMS: '+report.rms.toFixed(6)+'. Mẫu tại hoặc vượt full scale: '+report.fullScale+'.',
+  'Peak tuyệt đối: '+report.peak.toFixed(6)+'. RMS: '+report.rms.toFixed(6)+'. '+formatFullScaleCount(report),
   'ASR nguồn / xuất: '+report.segments+' / '+report.postAsr.segments+' đoạn. Văn bản và timestamp giống nhau: '+asrSame+'.',
   'Kiểm tra điểm nối: không áp dụng vì không có điểm cắt. Chất lượng nghe: NOT TESTED.',
 ].join('\n')+'\n',{flag:'wx'});

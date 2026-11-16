@@ -98,3 +98,8 @@ Each entry must include ID, detection date, affected version, symptom, reproduct
 - The local adapter now invokes FFmpeg with an argument vector to decode mono float32 at 16 kHz and passes the sample array to faster-whisper.
 - Regression evidence: real source and output transcription through the new path. Track transcription completion separately from model accuracy.
 - Prevention: verify the actual decode and model input path against the deployed runtime.
+
+## P4-002 — Markdown reported an undefined full-scale count
+
+- Seen in the completed real-01 export. JSON contained fullScaleSamples while Markdown read fullScale.
+- Corrected the formatter, updated the local report from the measured JSON and added a regression test for valid and missing counts.

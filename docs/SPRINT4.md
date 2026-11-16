@@ -16,4 +16,12 @@ Use a fresh sprint4 output directory for each full run. Outputs, words, cut cand
 
 ## Validation scope
 
-Local regression: 47 Node and 6 Python tests passed. Seven new cases exercise conservative classification with synthetic timestamped transcripts, including incomplete reads, stumbles, repetition, protected names/numbers and quiet or long pauses. Existing audio tests cover preserved frame boundaries and synthetic joins. Human listening, Vietnamese ground truth, word error rate, semantic retake accuracy and readiness for broadcast remain unverified.
+Local regression: 48 Node and 6 Python tests passed. Seven classification cases exercise conservative classification with synthetic timestamped transcripts, including incomplete reads, stumbles, repetition, protected names/numbers and quiet or long pauses. Existing audio tests cover preserved frame boundaries and synthetic joins. Human listening, Vietnamese ground truth, word error rate, semantic retake accuracy and readiness for broadcast remain unverified.
+
+## Real-01 run
+
+The authorized local recording ran end to end for 107,064,320 source frames at 48 kHz mono. The source SHA-256 remained unchanged. Whisper produced 361 segments and 6,133 word timestamp entries. Evidence comprised 140 VAD proposals and 27 repeated-prefix candidates. The policy retained 129 protected and 38 uncertain findings and cut zero regions.
+
+The float WAV preserved all sample bytes. The 192 kbps MP3 decoded to the same frame count and stream format. The second ASR run returned the same 361 segments with identical text and timestamps. This corroborates the keep-all run but does not certify ASR accuracy or audio quality. The WAV contains 1,368 samples at or above full scale, already present in the source. Listening and splice acceptance were not performed. The five deliverables and two private transcripts were written to the ignored local Sprint 4 directory.
+
+The pipeline currently consumes a prepared review dataset (reference WAV, source EDL and Silero review JSON). Raw-file-only ingestion, a calibrated AUTO deletion policy and validated retake/phoneme accuracy remain incomplete.

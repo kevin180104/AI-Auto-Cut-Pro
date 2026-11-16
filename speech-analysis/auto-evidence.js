@@ -24,3 +24,8 @@ export function classify(segments, proposals) {
   }
   return findings;
 }
+
+export function formatFullScaleCount(report) {
+  if (!Number.isSafeInteger(report.fullScaleSamples) || report.fullScaleSamples < 0) throw new Error('Missing full-scale sample count');
+  return 'Mẫu tại hoặc vượt full scale: '+report.fullScaleSamples+'.';
+}

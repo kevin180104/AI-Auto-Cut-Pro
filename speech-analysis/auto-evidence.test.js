@@ -24,3 +24,9 @@ test('shorter final take is not ranked first automatically',()=>{
  const findings=classify([segment('đây là một bản tin đầy đủ',0),segment('đây là một',2)],[]);
  assert.equal(findings[0].takes[0].start,0);
 });
+
+test('human report uses the measured full-scale count', async ()=>{
+ const {formatFullScaleCount}=await import('./auto-evidence.js');
+ assert.match(formatFullScaleCount({fullScaleSamples:17}),/17\.$/);
+ assert.throws(()=>formatFullScaleCount({}));
+});
