@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="5.0" ExtensionBundleId="com.aiautocutpro.audition.poc" ExtensionBundleVersion="0.1.0" ExtensionBundleName="AI Auto Cut Pro Audition POC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ExtensionList>
+    <Extension Id="com.aiautocutpro.audition.poc.panel" Version="0.1.0" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList><Host Name="AUDT" Version="11.0" /></HostList>
+    <LocaleList><Locale Code="All" /></LocaleList>
+    <RequiredRuntimeList><RequiredRuntime Name="CSXS" Version="6.0" /></RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.aiautocutpro.audition.poc.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <ScriptPath>./jsx/host.jsx</ScriptPath>
+        </Resources>
+        <Lifecycle><AutoVisible>false</AutoVisible></Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>AI Auto Cut Pro POC</Menu>
+          <Geometry><Size><Width>420</Width><Height>520</Height></Size></Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

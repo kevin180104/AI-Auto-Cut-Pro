@@ -1,0 +1,52 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.p7b
+*.p7c
+*.crt
+*.cer
+*.jks
+*.keystore
+
+# Local runtimes and build output
+.venv/
+venv/
+node_modules/
+dist/
+build/
+coverage/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Recordings and generated media are private by default
+*.wav
+*.wave
+*.mp3
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.aif
+*.aiff
+*.sesx
+*.pkf
+*.cfa
+recordings/
+renders/
+artifacts/
+
+# Editor / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Task scratch clone
+work/

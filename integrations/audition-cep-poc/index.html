@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:8765; style-src 'self'; script-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Auto Cut Pro — Audition POC</title>
+  <link rel="stylesheet" href="panel.css">
+  <script src="panel.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>AI Auto Cut Pro</h1>
+    <p class="sub">Adobe Audition integration proof of concept</p>
+    <section><h2>Host / ExtendScript</h2><p id="host-status" role="status">Chưa kết nối</p><button id="host-check">Kiểm tra host</button></section>
+    <section><h2>Backend Python local</h2><p id="backend-status" role="status">Chưa kết nối</p><button id="backend-check">Kiểm tra backend</button></section>
+    <section><h2>Nhật ký</h2><pre id="log" aria-live="polite"></pre></section>
+  </main>
+</body>
+</html>

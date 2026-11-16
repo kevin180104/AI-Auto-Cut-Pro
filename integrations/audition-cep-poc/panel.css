@@ -1,0 +1,10 @@
+:root { color-scheme: dark; font: 13px "Segoe UI", sans-serif; background: #242424; color: #f3f3f3; }
+body { margin: 0; padding: 16px; }
+h1 { margin: 0; font-size: 20px; }
+.sub { color: #b8b8b8; margin-top: 4px; }
+section { margin-top: 18px; padding: 12px; border: 1px solid #555; border-radius: 6px; }
+h2 { margin: 0 0 8px; font-size: 14px; }
+p { min-height: 18px; }
+button { border: 0; border-radius: 4px; padding: 7px 12px; color: white; background: #1473e6; cursor: pointer; }
+button:focus { outline: 2px solid #9ec5ff; }
+pre { margin: 0; max-height: 170px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: #c8e6c9; font: 11px Consolas, monospace; }
