@@ -57,7 +57,18 @@ export function validateEdl(edl) {
   for (const [index, segment] of edl.removedSegments.entries()) {
     const label = `removedSegments[${index}]`;
     validateRange(segment, edl.source.totalSamples, label);
-    assert(segment.approval === 'human-approved', `${label} requires explicit human approval`);
+    if (segment.approval === 'auto-approved') {
+      const provenance = segment.provenance;
+      const margin = Math.ceil(edl.source.sampleRate * 0.2);
+      assert(provenance?.rule === 'digital-silence-v1' &&
+        provenance.sourceHash === edl.source.sha256 && typeof provenance.calibration?.id === 'string' &&
+        provenance.calibration.id.trim().length > 0 && /^[a-f0-9]{64}$/.test(provenance.calibration.sha256 ?? ''),
+      `${label} requires calibrated automatic provenance bound to this source`);
+      assert(segment.sourceStartSample > margin && segment.sourceEndSample < edl.source.totalSamples - margin,
+        `${label} must leave protected margins at both boundaries`);
+    } else {
+      assert(segment.approval === 'human-approved', `${label} requires explicit human approval`);
+    }
     assert(typeof segment.reason === 'string' && segment.reason.trim().length > 0, `${label}.reason is required`);
     assert(typeof segment.evidence === 'string' && segment.evidence.trim().length > 0, `${label}.evidence is required`);
     assert(typeof segment.id === 'string' && segment.id.trim().length > 0, `${label}.id is required`);

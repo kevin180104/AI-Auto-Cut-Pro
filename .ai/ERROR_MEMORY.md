@@ -103,3 +103,9 @@ Each entry must include ID, detection date, affected version, symptom, reproduct
 
 - Seen in the completed real-01 export. JSON contained fullScaleSamples while Markdown read fullScale.
 - Corrected the formatter, updated the local report from the measured JSON and added a regression test for valid and missing counts.
+
+## P5-001 — Auto Edit constructed a keep-all EDL before evaluating cuts
+
+- Sprint 4 always set removedSegments to an empty array, so no input could exercise automatic cutting.
+- Sprint 5 derives removed and retained intervals from the calibrated decision gate. The renderer additionally requires exact silence inside each automatic cut and its guard margins.
+- Regression: synthetic PCM16 and float32 cases produce a nonzero verified cut. Missing/leaked/unsafe calibration and nonzero samples preserve or reject the cut. Real broadcast activation is still pending independent benchmark labels.

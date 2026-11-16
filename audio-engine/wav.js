@@ -121,6 +121,12 @@ function renderWavBuffer(sourceBuffer, edl) {
     fail('WAV stream format does not match the EDL');
   }
 
+  for (const segment of edl.removedSegments.filter(segment => segment.approval === 'auto-approved')) {
+    const margin = Math.ceil(wav.sampleRate * 0.2);
+    const signal = measureSignal(sourceBuffer, wav, segment.sourceStartSample - margin, segment.sourceEndSample + margin);
+    if (signal.peak !== 0) fail('Automatic removal rejected: cut or guard margin contains nonzero audio');
+  }
+
   const frameRanges = edl.keepSegments.map((segment) => ({
     start: wav.dataOffset + segment.sourceStartSample * wav.blockAlign,
     end: wav.dataOffset + segment.sourceEndSample * wav.blockAlign,
@@ -181,6 +187,23 @@ async function renderWavFromEdl(edl) {
     sourceFormat: result.sourceFormat,
     metadataPreserved: result.metadataPreserved,
   };
+}
+
+export function measureSignal(buffer, wav, startFrame = 0, endFrame = wav.sampleFrames) {
+  const width = wav.bitsPerSample / 8;
+  const pcm16 = wav.effectiveFormatTag === 1 && width === 2;
+  if (!pcm16 && !(wav.effectiveFormatTag === 3 && width === 4)) fail('Signal inspection requires PCM16 or float32 WAV');
+  const start = Math.max(0, Math.min(wav.sampleFrames, startFrame));
+  const end = Math.max(start, Math.min(wav.sampleFrames, endFrame));
+  let peak = 0, squares = 0, fullScale = 0;
+  for (let pos = wav.dataOffset + start * wav.blockAlign; pos < wav.dataOffset + end * wav.blockAlign; pos += width) {
+    const sample = pcm16 ? buffer.readInt16LE(pos) / 32768 : buffer.readFloatLE(pos);
+    if (!Number.isFinite(sample)) fail('Non-finite audio sample');
+    peak = Math.max(peak, Math.abs(sample));
+    squares += sample * sample;
+    if (Math.abs(sample) >= 1) fullScale++;
+  }
+  return { peak, rms: Math.sqrt(squares / Math.max(1, (end - start) * wav.channels)), fullScale };
 }
 
 export { parseWavBuffer, renderWavBuffer, renderWavFromEdl };
