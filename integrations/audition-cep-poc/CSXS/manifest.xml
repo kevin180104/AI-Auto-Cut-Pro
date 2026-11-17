@@ -14,11 +14,14 @@
         <Resources>
           <MainPath>./index.html</MainPath>
           <ScriptPath>./jsx/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+          </CEFCommandLine>
         </Resources>
         <Lifecycle><AutoVisible>false</AutoVisible></Lifecycle>
         <UI>
           <Type>Panel</Type>
-          <Menu>AI Auto Cut Pro POC</Menu>
+          <Menu>AI Auto Cut Pro</Menu>
           <Geometry><Size><Width>420</Width><Height>520</Height></Size></Geometry>
         </UI>
       </DispatchInfo>

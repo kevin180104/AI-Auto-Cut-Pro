@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { open, readFile, unlink } from 'node:fs/promises';
 import { win32 } from 'node:path';
 import { validateEdl } from './edl.js';
+import { applyEffects } from './effects.js';
 
 const MAX_RIFF_SIZE = 0xffffffff;
 
@@ -120,14 +121,27 @@ function renderWavBuffer(sourceBuffer, edl) {
     fail('WAV stream format does not match the EDL');
   }
 
+  for (const segment of edl.removedSegments.filter(segment => segment.approval === 'auto-approved')) {
+    const margin = Math.ceil(wav.sampleRate * 0.2);
+    const signal = measureSignal(sourceBuffer, wav, segment.sourceStartSample - margin, segment.sourceEndSample + margin);
+    if (signal.peak !== 0) fail('Automatic removal rejected: cut or guard margin contains nonzero audio');
+  }
+
   const frameRanges = edl.keepSegments.map((segment) => ({
     start: wav.dataOffset + segment.sourceStartSample * wav.blockAlign,
     end: wav.dataOffset + segment.sourceEndSample * wav.blockAlign,
   }));
   const retainedBytes = frameRanges.reduce((sum, range) => sum + range.end - range.start, 0);
   if (retainedBytes > MAX_RIFF_SIZE) fail('Rendered WAV audio exceeds the RIFF 32-bit size limit');
-  const retainedAudio = Buffer.concat(frameRanges.map((range) => sourceBuffer.subarray(range.start, range.end)), retainedBytes);
-  const outputFrames = retainedBytes / wav.blockAlign;
+  const parts = frameRanges.map((range) => sourceBuffer.subarray(range.start, range.end));
+  let retainedAudio = Buffer.concat(parts, retainedBytes);
+  let outputFrames = retainedBytes / wav.blockAlign;
+  if (edl.effects) {
+    const float = wav.effectiveFormatTag === 3 && wav.bitsPerSample === 32;
+    if (!float && (wav.formatTag !== 1 || wav.bitsPerSample !== 16)) fail('Effects require PCM16 or float32 WAV');
+    const processed = applyEffects(parts, wav.channels, wav.sampleRate, edl.effects, float);
+    retainedAudio = processed.buffer; outputFrames = processed.sampleFrames;
+  }
   const outputBuffer = buildWaveFile(wav.fmtChunk, retainedAudio, wav.effectiveFormatTag, outputFrames);
 
   return {
@@ -139,7 +153,8 @@ function renderWavBuffer(sourceBuffer, edl) {
       sampleFrames: wav.sampleFrames,
     },
     outputFrames,
-    removedFrames: wav.sampleFrames - outputFrames,
+    removedFrames: wav.sampleFrames - retainedBytes / wav.blockAlign,
+    overlapFrames: retainedBytes / wav.blockAlign - outputFrames,
     metadataPreserved: false,
   };
 }
@@ -168,9 +183,27 @@ async function renderWavFromEdl(edl) {
     outputPath: edl.output.path,
     outputFrames: result.outputFrames,
     removedFrames: result.removedFrames,
+    overlapFrames: result.overlapFrames,
     sourceFormat: result.sourceFormat,
     metadataPreserved: result.metadataPreserved,
   };
 }
 
-export { parseWavBuffer, renderWavBuffer, renderWavFromEdl };
+export function measureSignal(buffer, wav, startFrame = 0, endFrame = wav.sampleFrames) {
+  const width = wav.bitsPerSample / 8;
+  const pcm16 = wav.effectiveFormatTag === 1 && width === 2;
+  if (!pcm16 && !(wav.effectiveFormatTag === 3 && width === 4)) fail('Signal inspection requires PCM16 or float32 WAV');
+  const start = Math.max(0, Math.min(wav.sampleFrames, startFrame));
+  const end = Math.max(start, Math.min(wav.sampleFrames, endFrame));
+  let peak = 0, squares = 0, fullScale = 0;
+  for (let pos = wav.dataOffset + start * wav.blockAlign; pos < wav.dataOffset + end * wav.blockAlign; pos += width) {
+    const sample = pcm16 ? buffer.readInt16LE(pos) / 32768 : buffer.readFloatLE(pos);
+    if (!Number.isFinite(sample)) fail('Non-finite audio sample');
+    peak = Math.max(peak, Math.abs(sample));
+    squares += sample * sample;
+    if (Math.abs(sample) >= 1) fullScale++;
+  }
+  return { peak, rms: Math.sqrt(squares / Math.max(1, (end - start) * wav.channels)), fullScale };
+}
+
+export { buildWaveFile, parseWavBuffer, renderWavBuffer, renderWavFromEdl };

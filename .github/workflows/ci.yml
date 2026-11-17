@@ -1,0 +1,34 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: mkdir -p work
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npm test
+        env:
+          AACP_TEST_FFMPEG: /usr/bin/ffmpeg
+      - run: python -m unittest discover -s integrations/audition-cep-poc/backend -p 'test_*.py' -v
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: New-Item -ItemType Directory -Force work | Out-Null
+      - run: npm.cmd test
+      - run: python -m unittest discover -s integrations/audition-cep-poc/backend -p 'test_*.py' -v

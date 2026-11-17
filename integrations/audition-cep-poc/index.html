@@ -7,11 +7,21 @@
   <title>AI Auto Cut Pro — Audition POC</title>
   <link rel="stylesheet" href="panel.css">
   <script src="panel.js" defer></script>
+  <script src="handoff.js" defer></script>
 </head>
 <body>
   <main>
     <h1>AI Auto Cut Pro</h1>
-    <p class="sub">Adobe Audition integration proof of concept</p>
+    <p class="sub">Biên tập bản thu phát thanh</p>
+    <section>
+      <h2>Chuẩn bị bản thu</h2>
+      <p>Trong Audition, xuất riêng chương trình cần biên tập thành WAV. Chọn WAV đó ở bước tiếp theo.</p>
+      <button id="prepare-wav">Phân tích WAV</button>
+      <button id="open-review" disabled>Mở Studio để duyệt</button>
+      <p id="handoff-status" role="status">Chưa chọn WAV.</p>
+      <p id="output-folder"></p>
+      <p>Sau khi xuất bản đã duyệt, dùng File → Import trong Audition và chọn WAV mới trong thư mục trên.</p>
+    </section>
     <section><h2>Host / ExtendScript</h2><p id="host-status" role="status">Chưa kết nối</p><button id="host-check">Kiểm tra host</button></section>
     <section><h2>Backend Python local</h2><p id="backend-status" role="status">Chưa kết nối</p><button id="backend-check">Kiểm tra backend</button></section>
     <section><h2>Nhật ký</h2><pre id="log" aria-live="polite"></pre></section>
