@@ -6,7 +6,7 @@
   "description": "Local-first spoken-word editing foundation",
   "scripts": {
     "studio": "node studio/server.mjs",
-    "test": "node --test audio-engine/*.test.js speech-analysis/*.test.js integrations/audition-cep-poc/poc.test.js studio/server.test.mjs && node scripts/validate-skills.mjs"
+    "test": "node --test audio-engine/*.test.js speech-analysis/*.test.js integrations/audition-cep-poc/poc.test.js studio/server.test.mjs scripts/*.test.mjs && node scripts/validate-skills.mjs"
   },
   "engines": {
     "node": ">=20"

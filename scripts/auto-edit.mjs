@@ -7,6 +7,7 @@ import {publishRender} from '../audio-engine/publish.js';
 import {exportMp3} from '../audio-engine/mp3.js';
 import {proposalsFromActive} from '../speech-analysis/activity.js';
 import {createDecisionEdl,decidePauses,findRetakes} from '../speech-analysis/decision-engine.js';
+import {compareTranscripts} from './compare-asr.mjs';
 
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const json=async path=>JSON.parse(await readFile(path,'utf8'));
@@ -64,7 +65,6 @@ try {
   const target=join(out,'auto-edited.wav');
   let edl=createDecisionEdl(source,target,decisions);
   let rollback=null;
-  const canonical=result=>result.segments.flatMap(s=>(s.words?.length?s.words.map(w=>w.text):[s.text])).join(' ').normalize('NFC').replace(/\s+/g,' ').trim();
   const check=async(path,name)=>{
     const targetJson=join(out,name);
     transcribe(path,targetJson);
@@ -81,7 +81,9 @@ try {
       if(measured.peak>sourceSignal.peak)throw Error('Peak increased');
       await writeFile(trial,rendered.buffer,{flag:'wx'});
       post=await check(trial,'trial-asr.json');
-      if(canonical(asr)!==canonical(post))throw Error('ASR word sequence changed');
+      const comparison=compareTranscripts(asr,post);
+      if(comparison.sameExecutionProfile!==true)throw Error('ASR execution profile differs or is unavailable');
+      if(!comparison.sameWords)throw Error('ASR word sequence changed');
     }catch(error){
       rollback=error.message;
       for(const d of decisions.filter(d=>d.status==='AUTO_APPROVED')){
@@ -99,10 +101,11 @@ try {
   if(!post)post=await check(target,'output-asr.json');
   else await writeFile(join(out,'output-asr.json'),JSON.stringify(post),{flag:'wx'});
   const mp3=await exportMp3({ffmpegPath:ffmpeg,sourcePath:target,outputPath:join(out,'auto-edited.mp3')});
+  const asrComparison=compareTranscripts(asr,post);
   const summary={shadow,rollback,segments:asr.segments.length,pauses:review.proposals.length,retakes:decisions.filter(d=>d.kind==='retake').length,
     cuts:edl.removedSegments.length,framesBefore:wav.sampleFrames,framesAfter:rendered.outputFrames,mp3DecodedFrames:mp3.decodedFrames,
     sourceHashUnchanged:hash(await readFile(input))===source.sha256,signal:measureSignal(outputBytes,outputWav),
-    asrWordSequenceMatch:canonical(asr)===canonical(post),listening:'NOT TESTED'};
+    asrWordSequenceMatch:asrComparison.sameWords,asrComparison,listening:'NOT TESTED'};
   if(!summary.sourceHashUnchanged)throw Error('Source changed during operation');
   await writeFile(join(out,'auto-edit-report.json'),JSON.stringify({...summary,decisions},null,2),{flag:'wx'});
   await writeFile(join(out,'auto-edit-report.md'),[

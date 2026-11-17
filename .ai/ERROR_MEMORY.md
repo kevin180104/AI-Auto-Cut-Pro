@@ -109,3 +109,9 @@ Each entry must include ID, detection date, affected version, symptom, reproduct
 - Sprint 4 always set removedSegments to an empty array, so no input could exercise automatic cutting.
 - Sprint 5 derives removed and retained intervals from the calibrated decision gate. The renderer additionally requires exact silence inside each automatic cut and its guard margins.
 - Regression: synthetic PCM16 and float32 cases produce a nonzero verified cut. Missing/leaked/unsafe calibration and nonzero samples preserve or reject the cut. Real broadcast activation is still pending independent benchmark labels.
+
+## P6-001 — ASR word drift on matching input
+
+- Reproduced on the same local synthetic WAV with matching decoded PCM and execution profile on Windows. The full real-01 historical run also differed, but lacked full provenance.
+- Inspecting faster-whisper 1.2.1 revealed default decoding temperature fallback can enter a sampling path. Set temperature=0 explicitly and record input, decoder, model and runtime provenance. Do not approve a trial with a missing or mismatched execution profile.
+- Repeated local model checks matched on the synthetic WAV and a 30-second authorized Vietnamese excerpt after the change. Full-length repeatability and the precise cause of the historical mismatch remain unverified. Comparator regression tests independently verify that hashes, profiles and word agreement are separate.
