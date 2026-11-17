@@ -8,6 +8,7 @@ import {exportMp3} from '../audio-engine/mp3.js';
 import {proposalsFromActive} from '../speech-analysis/activity.js';
 import {createDecisionEdl,decidePauses,findRetakes} from '../speech-analysis/decision-engine.js';
 import {compareTranscripts} from './compare-asr.mjs';
+import {prepareStudioSession} from '../studio/prepare-session.mjs';
 
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const json=async path=>JSON.parse(await readFile(path,'utf8'));
@@ -113,5 +114,6 @@ try {
     '', '| ID | Phân loại | Trạng thái | Frame bắt đầu | Frame kết thúc | Căn cứ |','| --- | --- | --- | --- | --- | --- |',
     ...decisions.map(d=>'| '+[d.id,d.classification??d.kind,d.status,d.startFrame??d.takes[0].startFrame,d.endFrame??d.takes[0].endFrame,d.reason].join(' | ')+' |'),
   ].join('\n')+'\n',{flag:'wx'});
+  if(args.includes('--studio')) await prepareStudioSession(out,source,bytes,wav,review);
   console.log(summary);
 }finally{await rm(temp,{recursive:true,force:true});}

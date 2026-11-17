@@ -17,7 +17,13 @@ export async function createStudio(directory = join(root, 'work/acceptance/real-
   const dir = await realpath(directory);
   const reviewBytes = await readFile(join(dir, 'review.json'));
   const review = JSON.parse(reviewBytes);
-  const reference = JSON.parse(await readFile(join(dir, 'reference.edl.json'), 'utf8'));
+  let reference;
+  try {
+    reference = JSON.parse(await readFile(join(dir, 'studio-source.json'), 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    reference = JSON.parse(await readFile(join(dir, 'reference.edl.json'), 'utf8'));
+  }
   const sourcePath = reference.source.path;
   const identity = { sourceHash: review.source.sha256, proposalVersion: hash(reviewBytes) };
   if (reference.source.sha256 !== identity.sourceHash) throw new Error('Nguồn và danh sách đề xuất không khớp');
@@ -153,6 +159,6 @@ export async function createStudio(directory = join(root, 'work/acceptance/real-
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const server = await createStudio();
+  const server = await createStudio(process.argv[2] ? resolve(process.argv[2]) : undefined);
   server.listen(Number(process.env.AACP_PORT || 8768),'127.0.0.1',()=>console.log('Audio Review Studio: http://127.0.0.1:'+server.address().port));
 }

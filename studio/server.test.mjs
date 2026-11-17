@@ -59,3 +59,27 @@ test('Studio loads 140, isolates requests and decisions, and exports only approv
   assert.equal((await post('export',{confirm:true})).status,409);
   assert.deepEqual(await readFile(sourcePath),bits);
 });
+
+test('raw-analysis exports open as a Studio session with byte-exact previews',async t=>{
+  const {prepareStudioSession}=await import('./prepare-session.mjs');
+  const dir=await mkdtemp(join(tmpdir(),'aacp-studio-raw-'));
+  const bytes=fixture(), wav=parseWavBuffer(bytes);
+  const source={path:join(dir,'source.wav'),sha256:createHash('sha256').update(bytes).digest('hex'),sampleRate:wav.sampleRate,channels:1,totalSamples:wav.sampleFrames};
+  await writeFile(source.path,bytes);
+  const proposal={id:'quiet-1',startFrame:100,endFrame:200,startSeconds:100/wav.sampleRate,endSeconds:200/wav.sampleRate};
+  const session=await prepareStudioSession(dir,source,bytes,wav,{source,proposals:[proposal]});
+  const server=await createStudio(session);
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>server.close());
+  const base='http://127.0.0.1:'+server.address().port;
+  const state=await (await fetch(base+'/api/state')).json();
+  assert.equal(state.sourceHash,source.sha256);
+  assert.deepEqual(state.decisions,{});
+  const response=await fetch(base+'/audio/quiet-1/after');
+  assert.equal(response.status,200);
+  const preview=Buffer.from(await response.arrayBuffer());
+  const parsed=parseWavBuffer(preview);
+  assert.equal(parsed.sampleFrames,wav.sampleFrames-100);
+  assert.deepEqual(preview.subarray(parsed.dataOffset),Buffer.concat([bytes.subarray(44,244),bytes.subarray(444)]));
+  assert.deepEqual(await readFile(source.path),bytes);
+});

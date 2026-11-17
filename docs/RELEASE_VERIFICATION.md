@@ -30,3 +30,12 @@ The comparator prints structural flags and segment counts without exposing recog
 Before fixing decoding temperature, repeated runs on the same synthetic WAV differed in words despite matching WAV, decoded PCM and execution profile. The dependency defaults to temperature fallback with sampling on difficult windows. After setting temperature explicitly to zero, two runs matched on the same synthetic WAV and on a 30-second authorized real-01 excerpt. This does not isolate all causes of the historical full-recording mismatch or establish accuracy. The full recording and independent labeled evaluation remain outstanding.
 
 The local Node suite passed all 56 tests, with Windows FFmpeg enabled. GitHub CI now includes a Windows job for the Node suite and backend Python checks, in addition to the existing Ubuntu job. The Windows CI job does not install FFmpeg or run Adobe Audition.
+
+## Open a new recording in Studio
+
+Run the local environment setup in SPRINT4.md, then use a new ignored destination for each run. The shadow run creates WAV/MP3 and EDL plus a Studio session with local before/after previews. Human review exports into the session folder and preserves the original recording.
+
+    node scripts/auto-edit.mjs "input.wav" --output work/new-session --shadow --studio
+    npm.cmd run studio -- work/new-session/studio-session
+
+Open the loopback URL printed by Studio. If an existing Studio is still using the default port, set AACP_PORT in the new terminal to an unused loopback port. An existing real-01 session remains usable with the original command.

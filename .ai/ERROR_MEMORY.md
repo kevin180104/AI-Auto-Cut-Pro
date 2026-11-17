@@ -115,3 +115,8 @@ Each entry must include ID, detection date, affected version, symptom, reproduct
 - Reproduced on the same local synthetic WAV with matching decoded PCM and execution profile on Windows. The full real-01 historical run also differed, but lacked full provenance.
 - Inspecting faster-whisper 1.2.1 revealed default decoding temperature fallback can enter a sampling path. Set temperature=0 explicitly and record input, decoder, model and runtime provenance. Do not approve a trial with a missing or mismatched execution profile.
 - Repeated local model checks matched on the synthetic WAV and a 30-second authorized Vietnamese excerpt after the change. Full-length repeatability and the precise cause of the historical mismatch remain unverified. Comparator regression tests independently verify that hashes, profiles and word agreement are separate.
+
+## P6-002 — Studio could not open a raw-analysis session
+
+- The first synthetic end-to-end run exported a source manifest and previews, but Studio still required reference.edl.json from the older fixture layout.
+- Studio now reads the new manifest with the legacy reference EDL as fallback. Regression opens the generated session through HTTP, verifies preview PCM bytes and checks the original file remains unchanged.

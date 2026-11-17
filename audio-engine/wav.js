@@ -206,4 +206,4 @@ export function measureSignal(buffer, wav, startFrame = 0, endFrame = wav.sample
   return { peak, rms: Math.sqrt(squares / Math.max(1, (end - start) * wav.channels)), fullScale };
 }
 
-export { parseWavBuffer, renderWavBuffer, renderWavFromEdl };
+export { buildWaveFile, parseWavBuffer, renderWavBuffer, renderWavFromEdl };
