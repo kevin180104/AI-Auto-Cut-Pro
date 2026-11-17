@@ -8,3 +8,4 @@ p { min-height: 18px; }
 button { border: 0; border-radius: 4px; padding: 7px 12px; color: white; background: #1473e6; cursor: pointer; }
 button:focus { outline: 2px solid #9ec5ff; }
 pre { margin: 0; max-height: 170px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: #c8e6c9; font: 11px Consolas, monospace; }
+#output-folder { overflow-wrap: anywhere; }
